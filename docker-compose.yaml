@@ -1,0 +1,35 @@
+version: '3'
+services:
+  fastapi:
+    image: fastapi
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/fastapi
+    command: bash -c "
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    container_name: fastapi
+    working_dir: /fastapi/app
+    networks:
+      - fastapi-network
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-container
+    environment:
+      MYSQL_ROOT_PASSWORD: admin    # 设置 root 用户的密码
+      MYSQL_DATABASE: my_database         # 创建一个初始数据库
+      MYSQL_USER: user                    # 创建一个新的用户
+      MYSQL_PASSWORD: admin        # 为新用户设置密码
+    ports:
+      - "3306:3306"                       # 映射 MariaDB 默认端口
+    volumes:
+      - ./mariadb-data:/var/lib/mysql       # 使用卷来持久化数据库数据
+    networks:
+      - fastapi-network
+
+networks:
+  fastapi-network:
+    driver: bridge
