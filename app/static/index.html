@@ -31,9 +31,14 @@
         .content {
             margin-top: 20px;
         }
-        #full-content {
+        .full-content {
             margin-top: 20px;
             display: none;  /* Initially hidden */
+        }
+        .article-link {
+            font-size: 14px;
+            color: #007BFF;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -42,13 +47,6 @@
     <button id="load-news-btn">Load News</button>
     <div id="news-list">
         <!-- News items will be inserted here -->
-    </div>
-
-    <div id="full-content">
-        <button id="back-btn">Back</button>
-        <div id="content">
-            <!-- Full content will be displayed here -->
-        </div>
     </div>
 
     <script>
@@ -66,7 +64,13 @@
                             newsItem.classList.add('news-item');
                             newsItem.innerHTML = `
                                 <h3>${news.title}</h3>
-                                <button class="read-more-btn" data-url="${news.url}">Read more</button>
+                                <button class="read-more-btn" data-url="${news.url}">Show more</button>
+                                <div class="full-content">
+                                    <div class="article-link">
+                                        <a href="${news.url}" target="_blank">Article link</a>
+                                    </div>
+                                    <div class="content">Loading...</div>
+                                </div>
                             `;
                             newsContainer.appendChild(newsItem);
                         });
@@ -74,8 +78,22 @@
                         // Add event listeners to "Read more" buttons
                         document.querySelectorAll('.read-more-btn').forEach(button => {
                             button.addEventListener('click', function() {
+                                const fullContentDiv = this.nextElementSibling;
                                 const url = this.getAttribute('data-url');
-                                showFullContent(url);
+                                const contentDiv = fullContentDiv.querySelector('.content');
+
+                                // Toggle full content display
+                                if (fullContentDiv.style.display === '' || fullContentDiv.style.display === 'none') {
+                                    fullContentDiv.style.display = 'block';
+                                    this.textContent = 'Show less'; // Change button text to "Read less"
+                                    // Fetch the full HTML content if not already loaded
+                                    if (contentDiv.innerHTML === 'Loading...') {
+                                        fetchFullContent(url, contentDiv);
+                                    }
+                                } else {
+                                    fullContentDiv.style.display = 'none';
+                                    this.textContent = 'Show more'; // Change button text to "Read more"
+                                }
                             });
                         });
                     } else {
@@ -88,28 +106,22 @@
                 });
         });
 
-        // Function to display full content when "Read more" is clicked
-        function showFullContent(url) {
-            document.getElementById('content').innerHTML = '<p>Loading...</p>';  // Show loading message
-            document.getElementById('full-content').style.display = 'block';  // Show full content section
+        // Function to fetch full content
+        function fetchFullContent(url, contentDiv) {
+            contentDiv.innerHTML = '<p>Loading...</p>';  // Show loading message
             console.log(`Fetching full content for URL: ${url}`);  // Debug log
 
             // Fetch the full HTML content from the FastAPI endpoint
             fetch(`http://127.0.0.1:8000/api/get-news?url=${encodeURIComponent(url)}`)
                 .then(response => response.text())
                 .then(data => {
-                    document.getElementById('content').innerHTML = data;  // Insert the full HTML page
+                    contentDiv.innerHTML = data;  // Insert the full HTML page
                 })
                 .catch(error => {
                     console.error('Error fetching full content:', error);
-                    document.getElementById('content').innerHTML = '<p>Error loading content</p>';
+                    contentDiv.innerHTML = '<p>Error loading content</p>';
                 });
         }
-
-        // Add a "Back" button to go back to the list of news
-        document.getElementById('back-btn')?.addEventListener('click', function() {
-            document.getElementById('full-content').style.display = 'none';  // Hide full content section
-        });
     </script>
 </body>
 </html>
