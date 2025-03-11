@@ -41,3 +41,17 @@ def get_db_url():
 
     return f"mysql+pymysql://{user}:{password}@{ip}:{port}",database
 
+
+def get_more(url):
+    response = requests.get(url)
+
+    if response.status_code == 200:
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        title = soup.find('h1', {'class': 'story_art_title'}).text.strip() if soup.find('h1', {'class': 'story_art_title'}) else "無標題"
+        content = soup.find('div', {'id': 'story_body_content'}).text.strip() if soup.find('div', {'id': 'story_body_content'}) else "無內容"
+    return {
+        'title':title,
+        'content':content
+    }

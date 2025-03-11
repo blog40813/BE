@@ -36,3 +36,38 @@ async def Create_Table():
             'result':False,
             'msg':f'{str(e)}'
         }
+
+@app.post('/grep_news',tags = ['WebCrawler'])
+async def GrepNews():
+    try:
+        DATABASE_URL,database = get_db_url()
+
+        engine = create_engine(DATABASE_URL+f'/{database}')
+
+        Session = sessionmaker(bind = engine)
+        session = Session()
+
+        news = get_news_info()
+
+        for item in news:
+            existing_news = session.query(News).filter(News.title == item['title']).first()
+            if not existing_news:
+                data = News(
+                    title = item['title'],
+                    url = item['link']
+                )
+                session.merge(data)
+                session.commit()
+        session.close()
+        return {
+            'result':True,
+            'msg' : 'Get News success'
+        }
+    except Exception as e:
+        return{
+            'result':False,
+            'msg':f'{str(e)}'
+        }
+
+
+
