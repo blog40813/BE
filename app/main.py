@@ -1,12 +1,16 @@
 from fastapi import FastAPI
-
+from fastapi.responses import HTMLResponse
 from sqlalchemy import create_engine,text
 from sqlalchemy.orm import sessionmaker
-
 from crud import get_news_info,get_db_url
-from models import Base
+from models import Base,News
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get('/Hello_world')
 async def Hello():
@@ -71,3 +75,23 @@ async def GrepNews():
 
 
 
+@app.get('/database/get_news_list',tags = ['Database'])
+async def Get_News_List():
+    try:
+        DATABASE_URL,database = get_db_url()
+
+        engine = create_engine(DATABASE_URL+f'/{database}',echo = True)
+        Session = sessionmaker(bind = engine)
+        session = Session()
+        news = session.query(News).all()
+        return {
+            'result':True,
+            'msg':'Create table success',
+            'object':news
+        }
+    except Exception as e:
+        return{
+            'result':False,
+            'msg':f'{str(e)}',
+            'object':[]
+        }
