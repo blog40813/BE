@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from crud import get_news_info,get_db_url
 from models import Base,News
 from fastapi.staticfiles import StaticFiles
-
+import requests
+from bs4 import BeautifulSoup
 
 app = FastAPI()
 
@@ -95,3 +96,25 @@ async def Get_News_List():
             'msg':f'{str(e)}',
             'object':[]
         }
+
+
+@app.get("/api/get-news", response_class=HTMLResponse,tags =['WebCrawler'])
+async def get_news(url: str):
+    try:
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            story_content_body = soup.find(id='story_body_content')
+
+            if story_content_body:
+                return HTMLResponse(content=str(story_content_body))
+            else:
+                return HTMLResponse(content="<h1>Content not found</h1>")
+        else:
+            return HTMLResponse(content="<h1>Failed to fetch content</h1>")
+
+    except Exception as e:
+        
+        return HTMLResponse(content=f"<h1>Error occurred: {str(e)}</h1>")
