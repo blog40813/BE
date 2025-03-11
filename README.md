@@ -18,3 +18,8 @@
     * Include both upgrade and downgrade paths.
 2. Implement proper database indexing strategies for optimal query performance.
 
+## Demo website
+* Fast_api
+[http://104.199.129.75:8000/docs]
+* News
+[http://104.199.129.75:8000/static/index.html]
