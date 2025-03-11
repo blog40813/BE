@@ -9,5 +9,5 @@ class News(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(Text, nullable=False)
-    url = Column(Text, nullable=False)
+    url = Column(Text, index=True, nullable=False)
 #    test_migrate = Column(Text)
